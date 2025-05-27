@@ -3,28 +3,26 @@ name: Compile LaTeX PDFs
 on:
   push:
     paths:
-      - '**.tex'
+      - '**/main.tex'
   pull_request:
     paths:
-      - '**.tex'
+      - '**/main.tex'
 
 jobs:
   build-pdfs:
     runs-on: ubuntu-latest
 
+    container:
+      image: ghcr.io/moderncv/debian-texlive-docker:main
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up LaTeX
-        uses: dante-ev/latex-action@v2
-        with:
-          root_file: ""
-
       - name: Detect Changed .tex files
         id: changed
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.tex')
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '**/main.tex')
           echo "$CHANGED_FILES"
           echo "files<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
@@ -43,11 +41,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: compiled-pdfs
-          path: |
-            **/*.pdf
+          path: **/main.pdf
 
-      - name: Commit PDFs
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: "Auto-compile updated PDFs"
-          add: "*.pdf"
