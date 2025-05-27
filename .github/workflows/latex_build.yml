@@ -1,0 +1,53 @@
+name: Compile LaTeX PDFs
+
+on:
+  push:
+    paths:
+      - '**.tex'
+  pull_requests:
+    paths:
+      - '**.tex'
+
+jobs:
+  build-pdfs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up LaTeX
+        uses: dante-ev/latex-action@v2
+        with:
+          root_file: ""
+
+      - name: Detect Changed .tex files
+        id: changed
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.tex')
+          echo "$CHANGED_FILES"
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Compile changed files
+        if: steps.changed.output.files != ''
+        run: |
+          for file in ${{ steps.changed.outputs.files }}; do
+            echo "Compiling $file"
+            latexmk -lualatex -interaction=nonstopmode "$file"
+          done
+
+      - name: Upload PDFs as artifacts
+        if: steps.changed.outputs.files != ''
+          uses: actions/upload-artifact@v4
+          with:
+            name: compiled-pdfs
+            path: |
+              **/*.pdf
+
+      - name: Commit PDFs
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Auto-compile updated PDFs"
+          add: "*.pdf"
