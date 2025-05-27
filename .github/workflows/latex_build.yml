@@ -40,11 +40,11 @@ jobs:
 
       - name: Upload PDFs as artifacts
         if: steps.changed.outputs.files != ''
-          uses: actions/upload-artifact@v4
-          with:
-            name: compiled-pdfs
-            path: |
-              **/*.pdf
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-pdfs
+          path: |
+            **/*.pdf
 
       - name: Commit PDFs
         uses: EndBug/add-and-commit@v9
