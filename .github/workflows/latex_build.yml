@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/moderncv/debian-texlive-docker:main
+      image: ghcr.io/jordanaq/texlive:latest
 
     steps:
       - name: Checkout repo
