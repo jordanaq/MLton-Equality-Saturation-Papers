@@ -10,11 +10,14 @@ on:
 
 jobs:
   build-pdfs:
-    runs-on: ghcr.io/jordanaq/texlive:latest
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/jordanaq/texlive:latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: taiki-e/checkout-action
 
       - name: Detect Changed .tex files
         id: changed
