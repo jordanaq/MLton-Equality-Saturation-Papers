@@ -24,7 +24,9 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global --add safe.directory .
-          git clone https://$TOKEN@github.com/${{ github.repository }} .
+          git init .
+          git remote add origin https://$TOKEN@github.com/${{ github.repository }}
+          git fetch --depth=2 origin main
           git checkout ${{ github.sha }}
 
       - name: Detect Changed .tex files
