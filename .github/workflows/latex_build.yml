@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: taiki-e/checkout-action
+        uses: taiki-e/checkout-action@v1
 
       - name: Detect Changed .tex files
         id: changed
