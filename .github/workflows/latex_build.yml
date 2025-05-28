@@ -10,8 +10,7 @@ on:
 
 jobs:
   build-pdfs:
-    container:
-      image: ghcr.io/jordanaq/texlive:latest
+    runs-on: ghcr.io/jordanaq/texlive:latest
 
     steps:
       - name: Checkout repo
