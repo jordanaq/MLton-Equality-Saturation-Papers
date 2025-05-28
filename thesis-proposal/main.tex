@@ -16,7 +16,6 @@
 
 \maketitle
 
-
 \section{Introduction}
 
 This thesis proposes to design an e-graph program representation and necessary extensions to equality saturation to apply to the MLton compiler. While equality saturation has shown great use as a program optimization technique, particularly in imperative languages, applying it to MLton presents challenges due to its unique Single Static Assignment (SSA) Intermediate Representation (IR) and some of the expressive features of Standard ML (SML). In particular, we must consider advanced control flow constructs, such as irreducible control flow and pattern matching, which are challenging to represent in previous e-graphs program representations without compromising equality saturation.
