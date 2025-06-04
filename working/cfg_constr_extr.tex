@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathpartir}
+\usepackage{tikz}
+\usepackage{ stmaryrd }
+\usepackage{url}
+
+\usetikzlibrary{graphs}
+
+\title{Construction \& Extraction of EqMLton}
+\author{Jordan Quinn}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Construction}
+
+Given our MLton SSA, specified in ~\cite{MLtonSSA}, a construction for the CFG skeleton, $S$, follows. As our EqSat implementation operates on each function, we look at this structure in our SSA signature. First, we label each block with its index in the function's vector of blocks.
+
+Then, we start at the first block and begin constructing its block in the CFG skeleton. To do this, we construct an e-graph from the statements in this block, mainly identical to the expected construction of a PEG-like e-graph. The most significant difference is that we will create a region for each node that represents the value of an assignment. When a variable already referred to by a region is used to calculate another variable, we create a new region that uses all the parameter nodes for the sub-regions, and we create a new root node that calculates the new variable using the root nodes of the sub-regions as children. This reuses the existing e-graph nodes and limits the parameters to those passed to this block.
+
+Then, when we get to the transfer, we forget all of the regions that were not used.
+
+After the initial construction step, it would be useful to contract sequential blocks until we are left with only merge and join points.
+
+\section{Extraction}
+
+Extraction is more complicated as we need to translate back to MLton SSA at a middle point in its optimization pipeline.
+
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+
+\end{document}

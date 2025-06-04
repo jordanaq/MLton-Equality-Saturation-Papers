@@ -1,0 +1,203 @@
+@article{nelson1979,
+        author = {Nelson, Greg and Oppen, Derek C.},
+        title = {Simplification by Cooperating Decision Procedures},
+        year = {1979},
+        issue_date = {Oct. 1979},
+        publisher = {Association for Computing Machinery},
+        address = {New York, NY, USA},
+        volume = {1},
+        number = {2},
+        issn = {0164-0925},
+        url = {https://doi.org/10.1145/357073.357079},
+        doi = {10.1145/357073.357079},
+        abstract = {A method for combining decision procedures for several theories into a single decision procedure for their combination is described, and a simplifier based on this method is discussed. The simplifier finds a normal form for any expression formed from individual variables, the usual Boolean connectives, the equality predicate =, the conditional function if-then-else, the integers, the arithmetic functions and predicates +, -, and ≤, the Lisp functions and predicates car, cdr, cons, and atom, the functions store and select for storing into and selecting from arrays, and uninterpreted function symbols. If the expression is a theorem it is simplified to the constant true, so the simplifier can be used as a decision procedure for the quantifier-free theory containing these functions and predicates. The simplifier is currently used in the Stanford Pascal Verifier.},
+        journal = {ACM Trans. Program. Lang. Syst.},
+        month = oct,
+        pages = {245–257},
+        numpages = {13}
+}
+
+@article{detlefs2005,
+        author = {Detlefs, David and Nelson, Greg and Saxe, James B.},
+        title = {Simplify: a theorem prover for program checking},
+        year = {2005},
+        issue_date = {May 2005},
+        publisher = {Association for Computing Machinery},
+        address = {New York, NY, USA},
+        volume = {52},
+        number = {3},
+        issn = {0004-5411},
+        url = {https://doi.org/10.1145/1066100.1066102},
+        doi = {10.1145/1066100.1066102},
+        abstract = {This article provides a detailed description of the automatic theorem prover Simplify, which is the proof engine of the Extended Static Checkers ESC/Java and ESC/Modula-3. Simplify uses the Nelson--Oppen method to combine decision procedures for several important theories, and also employs a matcher to reason about quantifiers. Instead of conventional matching in a term DAG, Simplify matches up to equivalence in an E-graph, which detects many relevant pattern instances that would be missed by the conventional approach. The article describes two techniques, error context reporting and error localization, for helping the user to determine the reason that a false conjecture is false. The article includes detailed performance figures on conjectures derived from realistic program-checking problems.},
+        journal = {J. ACM},
+        month = may,
+        pages = {365–473},
+        numpages = {109},
+        keywords = {Theorem proving, decision procedures, program checking}
+}
+
+@inproceedings{eqsat-lmcs,
+      author = {Tate, Ross and Stepp, Michael and Tatlock, Zachary and Lerner, Sorin},
+      title = {Equality Saturation: a New Approach to Optimization},
+      booktitle = {Logical Methods in Computer Science},
+      volume = {7},
+      year = {2011},
+      url = {http://www.cs.cornell.edu/~ross/publications/eqsat/}
+}
+
+@misc{k_2023,
+    title={The e-graph data structure},
+    howpublished={\url{https://www.cole-k.com/2023/07/24/e-graphs-primer/}},
+    journal={Cole-k.com},
+    author={Cole Kurashige},
+    year={2023},
+    month={Jul}
+}
+
+@incollection{Stanier2022,
+    author="Stanier, James
+    and Rastello, Fabrice",
+    title="Graphs and Gating Functions",
+    booktitle="SSA-based Compiler Design",
+    year="2022",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="185--199",
+    abstract="Many compilers represent the input program as some form of graph in order to support analysis and transformation. Over time, a cornucopia of program graphs have been presented in the literature and subsequently implemented in real compilers. Many of these graphs use SSA concepts as the core principle of their representation, ranging from literal translations of SSA into graph form to more abstract graphs that are implicitly in SSA form. We aim to introduce a selection of program graphs that use these SSA concepts, and examine how they may be useful to a compiler writer. A well-known graph representation is the control-flow graph (CFG) that we encountered at the beginning of the book in the introduction to the core concept of SSA. The CFG models control flow in a program, but the graphs that we will study instead model data flow. This is useful as a large number of compiler optimizations are based on data-flow analysis. In fact, all graphs that we consider in this chapter are data-flow graphs. In this chapter, we will look at a number of SSA-based graph representations. An introduction to each graph will be given, along with diagrams to show how sample programs look when translated into that particular graph. Additionally, we will describe the techniques that each graph was created to solve, with references to the literature for further research.",
+    isbn="978-3-030-80515-9",
+    doi="10.1007/978-3-030-80515-9_14",
+    url="https://doi.org/10.1007/978-3-030-80515-9_14"
+}
+
+ @misc{bytecodealliance_2025,
+    title={GitHub - bytecodealliance/wasmtime: A lightweight WebAssembly runtime that is fast, secure, and standards-compliant},
+    howpublished={\url{https://github.com/bytecodealliance/wasmtime/tree/main}},
+    journal={GitHub},
+    author={bytecodealliance},
+    year={2025},
+    month={Apr}
+}
+
+ @misc{fallin_2022,
+    title={Cranelift: Using E-Graphs for Verified, Cooperating Middle-End Optimizations},
+    howpublished={\url{https://github.com/bytecodealliance/rfcs/blob/main/accepted/cranelift-egraph.md}},
+    journal={GitHub},
+    author={Fallin, Chris},
+    year={2022}
+}
+
+@misc{AcyclicEgraphsSmart2024,
+      title = {Acyclic {{Egraphs}} and {{Smart Constructors}}},
+      author = {Philip Zucker},
+      year = {2024},
+      month = sep,
+      journal = {Hey There Buddo!},
+      urldate = {2024-10-09},
+      abstract = {That there are egraphs in the Cranelift JIT is important as a proof of concept that a seriously engineered piece of production software can fruitfully use some (very intriguing!) variation of egraphs.},
+      howpublished = {https://www.philipzucker.com/smart\_constructor\_aegraph/},
+      langid = {english},
+      keywords = {equality saturation,theory},
+      file = {/Users/jumerckx/Zotero/storage/CBM4786P/smart_constructor_aegraph.html;/Users/jumerckx/Zotero/storage/DUBAHIPA/smart_constructor_aegraph.html}
+}
+
+@misc{fallin2023aegraphs,
+      author       = {Chris Fallin},
+      title        = {ægraphs: Acyclic E-graphs for Efficient Optimization in a Production Compiler},
+      howpublished = {EGRAPHS 2023 Workshop, co-located with PLDI 2023},
+      year         = {2023},
+      note         = {\url{https://cfallin.org/pubs/egraphs2023_aegraphs_slides.pdf}}
+}
+
+
+@misc{merckx2025equalitysaturationoptimizinghighlevel,
+      title={Equality Saturation for Optimizing High-Level Julia IR}, 
+      author={Jules Merckx and Tim Besard and Bjorn De Sutter},
+      year={2025},
+      eprint={2502.17075},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL},
+      howpublished={\url{https://arxiv.org/abs/2502.17075}}, 
+}
+
+@incollection{Brisk2022,
+    author="Philip Brisk and Fabrice Rastello",
+    title="Properties and Flavours",
+    bookTitle="SSA-based Compiler Design",
+    year="2022",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="13--22",
+    abstract="A procedure is in SSA form if every variable is defined only once, and every use of a variable refers to exactly one definition. Many variations, or flavours, of SSA form that satisfy these criteria can be defined, each offering its own considerations. For example, different flavours vary in terms of the number of phi-functions, which affects the size of the intermediate representation; some variations are more difficult to construct, maintain, and destruct than others. This chapter explores these SSA flavours and provides insights into their relative merits in certain contexts.",
+    isbn="978-3-030-80515-9",
+    doi="10.1007/978-3-030-80515-9_2",
+    url="https://doi.org/10.1007/978-3-030-80515-9_2"
+}
+
+@article{bhat2022lambdaultimatessaoptimizing,
+  author       = {Siddharth Bhat and
+                  Tobias Grosser},
+  title        = {Lambda the Ultimate {SSA:} Optimizing Functional Programs in {SSA}},
+  journal      = {CoRR},
+  volume       = {abs/2201.07272},
+  year         = {2022},
+  url          = {https://arxiv.org/abs/2201.07272},
+  eprinttype    = {arXiv},
+  eprint       = {2201.07272},
+  timestamp    = {Fri, 21 Jan 2022 13:57:15 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2201-07272.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+ @misc{adt_2021, url={https://en.wikipedia.org/wiki/Algebraic_data_type}, journal={Wikipedia}, year={2021}, month={Jan} }
+
+ @phdthesis{dellaneve_2023,
+    school={Rochester Institute of Technology},
+    type={Capstone Report},
+    title={Equality Saturation for the MLton Compiler},
+    url={https://www.cs.rit.edu/~mtf/student-resources/20231_dellaneve_mscourse.pdf}, author={DellaNeve, Matthew},
+    year={2023}
+}
+
+@misc{singher2023coloredegraphequalityreasoning,
+      title={Colored E-Graph: Equality Reasoning with Conditions}, 
+      author={Eytan Singher and Shachar Itzhaky},
+      year={2023},
+      eprint={2305.19203},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL},
+      howpublished={\url{https://arxiv.org/abs/2305.19203}}, 
+}
+
+@misc{MLtonSSA,
+  author       = {Matthew Fluet and Henry Cejtin and Suresh Jagannathan and Stephen Weeks},
+  title        = {MLton SSA Representation Source Code},
+  year         = {2024},
+  howpublished = {\url{https://github.com/MLton/mlton/blob/master/mlton/ssa/ssa-tree.fun}},
+}
+
+@article{Cheli2021,
+  doi = {10.21105/joss.03078},
+  url = {https://doi.org/10.21105/joss.03078},
+  year = {2021},
+  publisher = {The Open Journal},
+  volume = {6},
+  number = {59},
+  pages = {3078},
+  author = {Alessandro Cheli},
+  title = {Metatheory.jl: Fast and Elegant Algebraic Computation in Julia with Extensible Equality Saturation},
+  journal = {Journal of Open Source Software}
+}
+
+@article{Willsey_2021,
+   title={egg: Fast and extensible equality saturation},
+   volume={5},
+   ISSN={2475-1421},
+   url={http://dx.doi.org/10.1145/3434304},
+   DOI={10.1145/3434304},
+   number={POPL},
+   journal={Proceedings of the ACM on Programming Languages},
+   publisher={Association for Computing Machinery (ACM)},
+   author={Willsey, Max and Nandi, Chandrakana and Wang, Yisu Remy and Flatt, Oliver and Tatlock, Zachary and Panchekha, Pavel},
+   year={2021},
+   month=jan, pages={1–29} }
