@@ -15,14 +15,16 @@
 
 \maketitle
 
-\section{E-Nodes and E-Graphs}
+\section{Introduction}
+
+\subsection{E-Nodes and E-Graphs}
 
 Our E-graph implementation will be defined similarly to E-PEGs in Tate's EqSat paper ~\cite{eqsat-lmcs}. However, each node is annotated with the possible types it could represent. Therefore, our e-graphs will be 5-tuples, $\left\langle N, L, C, E, \Gamma \right\rangle$ where $\Gamma$ is our typing context.
 
 For nodes $n_1$ and $n_2$ in our e-graph, $\llbracket n_1 \rrbracket = \llbracket n_2 \rrbracket$ if $L(n_1) = L(n_2)$, $\Gamma \vdash n_1 : \tau$ and $\Gamma \vdash n_2 : \tau$, and, if for $C(n_1) = \langle c_{1,1}, c_{1,2}, \dots \rangle$, $C(n_2) = \langle c_{2,1}, c_{2,2}, \dots \rangle$, $n = |C(n_1)| = |C(n_2)|$, $\llbracket c_{1,i} \rrbracket = \llbracket c_{2,i} \rrbracket$ for each $i \in \{1, 2, \dots, n\}$.
 
 
-\section{Regions}
+\subsection{Regions}
 
 A \textbf{region} defines a set of e-graph nodes representing a computation. These region values appear in the CFG-skeleton and essentially represent continuations.
 
@@ -40,7 +42,7 @@ In other words, region $R$ is treated as a continuation that takes a tuple conta
 
 Then, for two regions, $R_1 = \langle N_1, I_1, r_1 \rangle$ and $R_2 = \langle N_2, I_2, r_2 \rangle$ in e-graph $G=\langle N, L, C, E, \Gamma \rangle$, where $N_1 = \langle n_{1, 1}, n_{1, 2}, \dots \rangle$ and $I_1 = \langle i_{1, 1}, i_{1, 2}, \dots \rangle$ and similar for $N_2$, $I_2$. Then, if $\Gamma \vdash R_1 : \tau$ and $\Gamma \vdash R_2 : \tau$, we know the lists of parameters are the same length and typed in the same order. Then, define $L'$ and e-graph $G'=\langle N, L', C, E, \Gamma \rangle$ such that $L' = L[i_{1,1} \vdash L(i{2,1}), i_{1,2} \vdash L(i{2,2}), \dots ]$. This ensures that the labeling is the same for each parameter list and thus $\llbracket i_{1, i} \rrbracket_{G'} = \llbracket i_{2, i} \rrbracket_{G'}$ for each $i \in \{1, \dots, |I_1| = |I_2| \}$. Then $\llbracket R_1 \rrbracket_{G} = \llbracket R_2 \rrbracket_{G}$ if $\llbracket r_1 \rrbracket_{G'} = \llbracket r_2 \rrbracket_{G'}$. In other words, two regions are semantically equivalent if their root nodes are semantically equivalent, ignoring the labels of parameter nodes in our regions.
 
-\section{CFG Skeleton}
+\subsection{CFG Skeleton}
 
 The CFG-skeleton is a directed graph that encodes the control-flow decisions taken by a program. It is directly related to MLton's SSA graph, except we are only interested in branch and merge points. Instead of representing computations as statements in the CFG-skeleton, as is done in MLton's SSA, we
 
@@ -53,14 +55,15 @@ b(x_1, \dots, x_k) ::=&\, &&\texttt{goto}_{b'} \left( R_1 \left\langle x_{1,1}, 
     &| &&\texttt{return } R \left\langle x_{1}, \dots, x_{k_1} \right\rangle
 \end{alignat*}
 
-Here, block $b$ has a single control flow statement that defines outgoing edges. In \texttt{goto}, we have one outgoing edge from $b$ to $b'$. We are passing arguments computed by evaluating regions $R_1$, $R_2$, etc. on their corresponding argument lists, $ \left\langle x_{1,1}, \dots, x_{1,k'} \right\rangle$ for $R_1$, etc. where each $x$ is a parameter in $\{x_1, \dots, x_k\}$. Similar is done to show edges for the other control flow statements. Note that \texttt{if} is used as an example for notation; we will solely use match according to the next section.
+Here, block $b$ has a single control flow statement that defines outgoing edges. In \texttt{goto}, we have one outgoing edge from $b$ to $b'$. We are passing arguments computed by evaluating regions $R_1$, $R_2$, etc. on their corresponding argument lists, $ \left\langle x_{1,1}, \dots, x_{1,k'} \right\rangle$ for $R_1$, etc. where each $x$ is a parameter in $\{x_1, \dots, x_k\}$. Similar is done to show edges for the other control flow statements. Note that \texttt{if} is used as an example for notation; we will solely use match according to the next subsection.
 
 
-\subsection{Pattern Matching}
+\subsubsection{Pattern Matching}
 
 The primary control flow consideration is handling pattern matching in our CFG skeleton. We consider three options: tagged tuples, first evaluation, and check-first evaluation.
 
-\subsubsection{Tagged Tuple Pattern Matching}
+\begin{itemize}
+  \item \textbf{Tagged Tuple Pattern Matching}
 
 In this variation, we consider each constructor a tagged tuple. The first value in our tuple indicates which constructor we are using, and the following values are parameters for that constructor. We then would represent a block with pattern-matching control flow as follows:
 
@@ -74,7 +77,7 @@ b(x_1, \dots, x_k) ::=&\, &&\texttt{match } R \left\langle x_{1,1}, \dots, x_{1,
 
 where the left hand side of each `$\Rightarrow$`, \texttt{'label}, is a label describing a constructor for $\tau$ when $\Gamma \vdash R : \tau$. The right-hand side of the `$\Rightarrow$` potentially describes naming parts of each constructor or passing additional parameters needed in $b_i$.
 
-\subsubsection{First Evaluation Pattern Matching}
+\item \textbf{First Evaluation Pattern Matching}
 
 Here, we take advantage of the fact that this is a theoretical representation of a computation. We define our match to pass control onto the first `$\Rightarrow$` that succeeds in evaluating all of its arguments. These arguments are the same as in tagged tuple pattern matching. However, we specially define match to keep trying each case until all regions evaluate to a non-$\bot$ value.
 
@@ -88,7 +91,7 @@ b(x_1, \dots, x_k) ::=&\, &&\texttt{match } R \left\langle x_{1,1}, \dots, x_{1,
 
 Note that here, we do not need the original $R$ region in our match, and we can rely on our $R_{i}$s to construct our operand for us.
 
-\subsubsection{Check First Pattern Matching}
+\item \textbf{Check First Pattern Matching}
 
 This differs from the first two in that it first checks a predicate region, $R_{p_i}$, for each case to ensure that it can be deconstructed according to the pattern in the original program. The RHS is the same as the previous two versions.
 
@@ -103,10 +106,82 @@ b(x_1, \dots, x_k) &&&::=  \\
 
 Note that here, we do not need the original $R$ region in our match, and we can rely on our $R_{p_i}$s to construct our operand for us.
 
+\end{itemize}
 
-\section{Equality Saturation for MLton}
+\subsection{Equality Saturation for MLton}
 
 Our IR used for EqSat in MLton will then be a two-tuple, notably $R=\langle S, G \rangle$ where $S$ is a CFG-skeleton and $G$ is a PEG-style E-graph, likely derivative of FEG.
+
+
+\section{Formal Semantics}
+
+\subsection{E-Graphs and E-Nodes}
+
+The semantics of an E-node is defined similarly to in FPEG~\cite{dellaneve_2023}. That being, for E-Node $n$,
+
+\begin{alignat*}{1}
+  \llbracket n \rrbracket &= L(n) \llbracket C(n) \rrbracket
+\end{alignat*}
+
+
+An E-graph, however, does not have a specific semantic meaning.
+
+
+\subsection{Regions}
+
+We define the semantics of a region, $R = \langle N, I, r \rangle$, as a closure. This using the semantics of the node $r$, $\llbracket R \rrbracket = \llbracket r \rrbracket$ where we use the semantics of E-node $r$. Then, the semantics of application, $R (X)$, where $I$ and $X$ have congruent types, is defined as the application of the closure, $\llbracket R \rrbracket$ on tuple $X$. I.e., $\llbracket R (X) \rrbracket = \llbracket R \rrbracket \left( \llbracket X \rrbracket \right)$ and $\llbracket X \rrbracket = \langle \llbracket x_1 \rrbracket, \dots, \llbracket x_n \rrbracket \rangle$.
+
+We can also give a semantic meaning to a region well-typed region application of, $R = \left\langle N, I, r \right\rangle$, in E-Graph $G$, applied to a tuple via:
+
+$$
+  \llbracket R \left( X = \left\langle x_1, x_2, \dots , x_n \right\rangle \right) \rrbracket = \llbracket r \rrbracket_{G'}
+$$
+
+where $G' = \left\langle N, L', C, E, \Gamma \right\rangle$ and $L' = L[i_1 \vdash x_1, i_2 \vdash x_2, \dots, i_n \vdash x_n]$ for $I= \left\langle i_1, i_2, \dots, i_n \right\rangle$.
+
+
+\subsection{CFG Skeleton}
+
+To define the semantics of our CFG skeleton, $S$, we first look at the semantics for a single block, $b \in S^*$ with parameters $X = \langle x_1, x_2, \dots, x_{n}\rangle$.
+
+\begin{alignat*}{2}
+  \llbracket b (X) &= \texttt{call}_{f} \left( R_1, \dots, R_{n'} \right) \rrbracket
+                   &&= \left\llbracket f \left( \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right) \right\rrbracket \\
+  \llbracket b (X) &= \texttt{goto}_{b'} \left( R_1, \dots, R_{n'} \right)\rrbracket
+                   &&= \left\llbracket b' \left( \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right) \right\rrbracket \quad n' = |X'| \\
+  \llbracket b (X) &= \texttt{raise} \left( R_e, R_1, \dots R_{n'} \right) \rrbracket 
+                   &&=\left\llbracket \texttt{prim}\langle\texttt{con}\rangle \left( \llbracket R_e \rrbracket, \langle \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \rangle \right) \right\rrbracket \\
+  \llbracket b (X) &= \texttt{return} \left( R_1, \dots, R_{n'} \right) \rrbracket
+                  &&= \left\langle \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right\rangle \\
+\end{alignat*}
+
+
+
+\subsubsection{Tagged Tuple Pattern Matching}
+
+Now, to assist in defining the semantics of our pattern matching, it will be easier to think in the semantics of our transition, $T_1$, tagged tuple pattern matching in this case. Let $T_1$ be a tuple, $\langle x, C, D \rangle$. First, $x$ is a region in the E-graph that evaluates to a constructor tag. Then, $C$ is a list of pairs, the first element being a constructor tag, $p$, and the second element being a $\texttt{goto}$ transition. $D$, then, is the default case. It is another $\texttt{goto}$ transition.
+
+Then, we can define on-demand evaluation semantics for $T_1$, where $T_1$ computes the constructor tag in $x$, $\llbracket x \rrbracket$, and then computing the meaning of the transition of the pair in $C$ with $\llbracket p \rrbracket = \llbracket x \rrbracket$. If no appropriate $p$s are found, we use the transition in $D$ instead.
+
+
+\subsubsection{MLton SSA-like Pattern Matching}
+
+We now consider the following pattern matching:
+
+\begin{alignat*}{2}
+b(x_1, \dots, x_k) &&&::=  \\
+\texttt{match} \, &&& R \left\langle x_{1,1}, \dots, x_{1,k'} \right\rangle \\
+    & && R_{p_1} \left\langle x_{1,p,1}, \dots, x_{1,p,k_{1,p}} \right\rangle \Rightarrow \texttt{goto}_{b_1} \\
+    & && R_{p_2} \left\langle x_{2,p,1}, \dots, x_{2,p,k_{2,p}} \right\rangle \Rightarrow \texttt{goto}_{b_2} \\
+    & &&\vdots \\
+    & && R_{p_n} \left\langle x_{n,p,1}, \dots, x_{n,p,k_{n,p}} \right\rangle \Rightarrow \texttt{goto}_{b_n} \\
+\end{alignat*}
+
+
+This is similar to the first-evaluation pattern matching but is closer to that use in MLton's SSA language.
+
+Here, we can again define an on-demand meaning for our pattern matching transition, this time called $T_2$. Now, however, we execute pattern regions until one does not return $\bot$. What that pattern returns is twhat we give to the block in the goto.
+
 
 \bibliographystyle{plain}
 \bibliography{refs}
