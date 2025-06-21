@@ -142,6 +142,29 @@ where $G' = \left\langle N, L', C, E, \Gamma \right\rangle$ and $L' = L[i_1 \vda
 
 \subsection{CFG Skeleton}
 
+To define the semantics of our CFG skeleton, $S$, we first look at the semantics for a single block, $b \in S^*$ with parameters $X = \langle x_1, x_2, \dots, x_{n}\rangle$.
+
+\begin{alignat*}{2}
+  \llbracket b (X) &= \texttt{call}_{f} \left( R_1, \dots, R_{n'} \right) \rrbracket
+                   &&= \left\llbracket f \left( \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right) \right\rrbracket \\
+  \llbracket b (X) &= \texttt{goto}_{b'} \left( R_1, \dots, R_{n'} \right)\rrbracket
+                   &&= \left\llbracket b' \left( \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right) \right\rrbracket \quad n' = |X'| \\
+  \llbracket b (X) &= \texttt{raise} \left( R_e, R_1, \dots R_{n'} \right) \rrbracket 
+                   &&=\left\llbracket \texttt{prim}\langle\texttt{con}\rangle \left( \llbracket R_e \rrbracket, \langle \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \rangle \right) \right\rrbracket \\
+  \llbracket b (X) &= \texttt{return} \left( R_1, \dots, R_{n'} \right) \rrbracket
+                  &&= \left\langle \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right\rangle \\
+\end{alignat*}
+
+
+
+\subsubsection{Tagged Tuple Pattern Matching}
+
+Now, to assist in defining the semantics of our pattern matching, it will be easier to think in the semantics of our transition, $T_1$, tagged tuple pattern matching in this case. Let $T_1$ be a tuple, $\langle x, C, D \rangle$. First, $x$ is a region in the E-graph that evaluates to a constructor tag. Then, $C$ is a list of pairs, the first element being a constructor tag, $p$, and the second element being a $\texttt{goto}$ transition. $D$, then, is the default case. It is another $\texttt{goto}$ transition.
+
+Then, we can define on-demand evaluation semantics for $T_1$, where $T_1$ computes the constructor tag in $x$, $\llbracket x \rrbracket$, and then computing the meaning of the transition of the pair in $C$ with $\llbracket p \rrbracket = \llbracket x \rrbracket$. If no appropriate $p$s are found, we use the transition in $D$ instead.
+
+For each statement, along with state $\sigma$, containing th
+
 \begin{itemize}
   \item Use the denotational semantics of a region to define operational semantics
     \begin{mathpar}
@@ -151,6 +174,13 @@ where $G' = \left\langle N, L', C, E, \Gamma \right\rangle$ and $L' = L[i_1 \vda
     \\\inferrule
       { }
       { \langle R \langle x_1, \dots x_n \rangle, \sigma, G \rangle \rightarrow \langle \llbracket R \langle x_1, \dots, x_n \rangle \rrbracket_{G}, \sigma, G \rangle }
+    \end{mathpar}
+
+  \item
+    \begin{mathpar}
+      \inferrule
+    {\langle \langle R_1 X_1, \sigma, G \rangle \rightarrow \langle R_1', \sigma, G \rangle \, \dots \langle \langle R_1 X_1, \sigma, G \rangle \rightarrow \langle R_1', \sigma, G \rangle \, \dots }}
+    {\langle b (x_1, \dots, x_n) = \texttt{call}_f (R_1 X_1, \dots, R_{n'} X_{n'}), \sigma \rangle \rightarrow f (R_1', \dots, R_{n'}' )}
     \end{mathpar}
 
 
@@ -165,6 +195,26 @@ where $G' = \left\langle N, L', C, E, \Gamma \right\rangle$ and $L' = L[i_1 \vda
     {\langle b (x_1, \dots, x_n) = \texttt{goto}_f (R_1 X_1, \dots, R_{n'} X_{n'}), \sigma \rangle \rightarrow b (', \dots, R_{n'}' )}
     \end{mathpar}
 \end{itemize}
+
+
+
+\subsubsection{MLton SSA-like Pattern Matching}
+
+We now consider the following pattern matching:
+
+\begin{alignat*}{2}
+b(x_1, \dots, x_k) &&&::=  \\
+\texttt{match} \, &&& R \left\langle x_{1,1}, \dots, x_{1,k'} \right\rangle \\
+    & && R_{p_1} \left\langle x_{1,p,1}, \dots, x_{1,p,k_{1,p}} \right\rangle \Rightarrow \texttt{goto}_{b_1} \\
+    & && R_{p_2} \left\langle x_{2,p,1}, \dots, x_{2,p,k_{2,p}} \right\rangle \Rightarrow \texttt{goto}_{b_2} \\
+    & &&\vdots \\
+    & && R_{p_n} \left\langle x_{n,p,1}, \dots, x_{n,p,k_{n,p}} \right\rangle \Rightarrow \texttt{goto}_{b_n} \\
+\end{alignat*}
+
+
+This is similar to the first-evaluation pattern matching but is closer to that use in MLton's SSA language.
+
+Here, we can again define an on-demand meaning for our pattern matching transition, this time called $T_2$. Now, however, we execute pattern regions until one does not return $\bot$. What that pattern returns is twhat we give to the block in the goto.
 
 
 \bibliographystyle{plain}
