@@ -3,9 +3,14 @@
 \usepackage{amssymb}
 \usepackage{mathpartir}
 \usepackage{tikz}
-\usepackage{ stmaryrd }
+\usepackage{stmaryrd}
+\usepackage{float}
 
 \usetikzlibrary{graphs}
+
+
+\newcommand{\bttt}[1]{\texttt{\textbf{#1}}}
+
 
 \title{Semantics for EqMLton}
 \author{Jordan Quinn}
@@ -34,7 +39,7 @@ Note that, for region $\mathit R = \left\langle N, I, r \right\rangle$,
 
 \begin{mathpar}
 \inferrule
-  { \Gamma \vdash r : \tau \\ \Gamma \vdash I = \langle i_1, i_2, \dots, i_k \rangle : \langle \tau_1 , \tau_2 , \dots \tau_k \rangle }
+  { \Gamma \vdash r : \tau \\ \Gamma \vdash I = \langle i_1, i_2, \dots, i_k \rangle : \langle \tau_1, \tau_2, \dots \tau_k \rangle }
   { \Gamma \vdash \mathit R : \langle \tau_1, \tau_2, \dots, \tau_k \rangle \rightarrow \tau }
 \end{mathpar}
 
@@ -75,7 +80,7 @@ b(x_1, \dots, x_k) ::=&\, &&\texttt{match } R \left\langle x_{1,1}, \dots, x_{1,
     & &&\texttt{'n } \Rightarrow \texttt{goto}_{b_n} \left( R_{n,1} \left\langle x_{n,1,1}, \dots, x_{n,1,k_{n,1}} \right\rangle, R_{n,2} \dots\right) \\
 \end{alignat*}
 
-where the left hand side of each `$\Rightarrow$`, \texttt{'label}, is a label describing a constructor for $\tau$ when $\Gamma \vdash R : \tau$. The right-hand side of the `$\Rightarrow$` potentially describes naming parts of each constructor or passing additional parameters needed in $b_i$.
+Where the left-hand side of each `$\Rightarrow$`, \texttt{'label}, is a label describing a constructor for $\tau$ when $\Gamma \vdash R : \tau$. The right-hand side of the `$\Rightarrow$` potentially describes naming parts of each constructor or passing additional parameters needed in $b_i$.
 
 \item \textbf{First Evaluation Pattern Matching}
 
@@ -129,92 +134,146 @@ An E-graph, however, does not have a specific semantic meaning.
 
 \subsection{Regions}
 
-We define the semantics of a region, $R = \langle N, I, r \rangle$, as a closure. This using the semantics of the node $r$, $\llbracket R \rrbracket = \llbracket r \rrbracket$ where we use the semantics of E-node $r$. Then, the semantics of application, $R (X)$, where $I$ and $X$ have congruent types, is defined as the application of the closure, $\llbracket R \rrbracket$ on tuple $X$. I.e., $\llbracket R (X) \rrbracket = \llbracket R \rrbracket \left( \llbracket X \rrbracket \right)$ and $\llbracket X \rrbracket = \langle \llbracket x_1 \rrbracket, \dots, \llbracket x_n \rrbracket \rangle$.
-
-We can also give a semantic meaning to a region well-typed region application of, $R = \left\langle N, I, r \right\rangle$, in E-Graph $G$, applied to a tuple via:
-
-$$
-  \llbracket R \left( X = \left\langle x_1, x_2, \dots , x_n \right\rangle \right) \rrbracket = \llbracket r \rrbracket_{G'}
-$$
-
-where $G' = \left\langle N, L', C, E, \Gamma \right\rangle$ and $L' = L[i_1 \vdash x_1, i_2 \vdash x_2, \dots, i_n \vdash x_n]$ for $I= \left\langle i_1, i_2, \dots, i_n \right\rangle$.
+We define the semantics of a region, $R = \langle N, I, r \rangle$, with a list of arguments to $R$, $X = \langle x_1, \dots, x_n \rangle$ similarly to the semantics of E-graphs given by Tate, et al.~\cite{eqsat-lmcs}. Notably, we place the arguments passed to the region, which share a type with the list of parameters, $\Gamma (X) \sim  \Gamma (I)$, into the e-graph as constant nodes that replace the parameter nodes. This is done via $r' = r[i_1 \mapsto \llbracket x_1 \rrbracket, \dots, i_n \mapsto \llbracket x_n \rrbracket]$. Then, we say that the semantics of $R (X) = R \langle x_1, \dots, x_n \rangle$ is $\left \llbracket R (X) \right \rrbracket = \llbracket r' \rrbracket$. Note that $R (X) \equiv R\, X \equiv R \langle x_1, \dots, x_n \rangle$ for convenience.
 
 
 \subsection{CFG Skeleton}
 
-To define the semantics of our CFG skeleton, $S$, we first look at the semantics for a single block, $b \in S^*$ with parameters $X = \langle x_1, x_2, \dots, x_{n}\rangle$.
+Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. However, it is useful to think of the set of all block labels, $bs$. In this grammar, the list of arguments, $X$, to block $b$, is described by the list of types in $T$.
 
-\begin{alignat*}{2}
-  \llbracket b (X) &= \texttt{call}_{f} \left( R_1, \dots, R_{n'} \right) \rrbracket
-                   &&= \left\llbracket f \left( \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right) \right\rrbracket \\
-  \llbracket b (X) &= \texttt{goto}_{b'} \left( R_1, \dots, R_{n'} \right)\rrbracket
-                   &&= \left\llbracket b' \left( \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right) \right\rrbracket \quad n' = |X'| \\
-  \llbracket b (X) &= \texttt{raise} \left( R_e, R_1, \dots R_{n'} \right) \rrbracket 
-                   &&=\left\llbracket \texttt{prim}\langle\texttt{con}\rangle \left( \llbracket R_e \rrbracket, \langle \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \rangle \right) \right\rrbracket \\
-  \llbracket b (X) &= \texttt{return} \left( R_1, \dots, R_{n'} \right) \rrbracket
-                  &&= \left\langle \llbracket R_1 \rrbracket, \dots, \llbracket R_{n'} \rrbracket \right\rangle \\
-\end{alignat*}
+\begin{figure}[H]
+  \centering
+  \begin{alignat*}{2}
+    B ::&=\quad&& \langle b, X, T, t \rangle \\
+    b ::&=&& block\_label \\
+    T ::&=&& \langle \tau_1, \dots, \tau_n \rangle \\
+    t ::&=&& \texttt{goto}_b ( R_1 X_1, \dots, R_n X_n ) \\
+        &|&& \texttt{call}_f ( R_1 X_1, \dots, R_n X_n ) \\
+        &|&& \texttt{raise} ( R_1 X_1, \dots, R_n X_n ) \\
+        &|&& \texttt{return} ( R_1 X_1, \dots, R_n X_n ) \\
+        &|&& \texttt{match} ( R_p X_p; \\
+        &&&\quad c_1 \Rightarrow \texttt{goto}_{b_1} (R_{1,1} X_{1,1}, \dots, R_{1,n_1} X_{1,n_1},\\
+        &&&\quad \dots, \\
+        &&&\quad c_n \Rightarrow \texttt{goto}_{b_n} (R_{n,1} X_{n,1}, \dots, R_{n,n_n} X_{n,n_n}; \\
+        &&&\quad [\Rightarrow \texttt{goto}_{b_{d}} (R_{d,1} X_{d,1}, \dots, R_{d,n_d} X_{d,n_d})] ) \\
+    R ::&=&& region\_label \\
+    X ::&=&& \langle x_1, \dots, x_n \rangle \\
+    x ::&=&& argument\_label \\
+    c ::&=&& constructor\_label
+  \end{alignat*}
+  \caption{Grammar for a CFG}
+  \label{fig:CFG_grammar}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|c|c}
+    \textbf{Type} & \textbf{Meta-Var} & \textbf{Purpose} \\\hline
+    $block$       & $b$               & CFG block \\\hline
+    $arg$         & $x$               & Argument to a block or function \\\hline
+    $region$      & $R$               & Region in the E-graph \\\hline
+    $value$       & $v$               & An SML value, primitive or constructor \\\hline
+    $return$      & $r$               & $\bttt{Ok}/\bttt{Err}$ Ok or exceptional return\\\hline
+    $store$       & $S$               & Store containing variable, value pairs
+  \end{tabular}
+  \caption{Table of metavariables used in semantics}
+  \label{fig:metavars}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{gather*}
+    \bttt{true} \\
+    \bttt{false}
+  \end{gather*}
+  \caption{Semantic-level atomics}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{alignat*}{2}
+    &\bttt{block} (b)    &&= \text{choose } B = \langle b', X, T, t \rangle \in bs \text{ such that } b \equiv b' \\
+    &\bttt{sig} (b)      &&= \bttt{block}(b)_T \\
+    &\bttt{params} (b)   &&= \bttt{block}(b)_X : \bttt{sig}(b) \\
+    &\bttt{children} (b) &&= \{ b' \in \bttt{block}(b)_t \} \\
+    &\bttt{is\_prim} (v)  &&= \bttt{true} \text{ if } v \text{ is a primitive type in MLton else } \bttt{false} \\
+    &\bttt{c\_label} (v)    &&= v \text{ if } \bttt{is\_prim} (v) \text{ else } v_1
+  \end{alignat*}
+  \caption{Semantic-level functions}
+  \label{fig:semantic_fs}
+\end{figure}
 
 
-
-\subsubsection{Tagged Tuple Pattern Matching}
-
-Now, to assist in defining the semantics of our pattern matching, it will be easier to think in the semantics of our transition, $T_1$, tagged tuple pattern matching in this case. Let $T_1$ be a tuple, $\langle x, C, D \rangle$. First, $x$ is a region in the E-graph that evaluates to a constructor tag. Then, $C$ is a list of pairs, the first element being a constructor tag, $p$, and the second element being a $\texttt{goto}$ transition. $D$, then, is the default case. It is another $\texttt{goto}$ transition.
-
-Then, we can define on-demand evaluation semantics for $T_1$, where $T_1$ computes the constructor tag in $x$, $\llbracket x \rrbracket$, and then computing the meaning of the transition of the pair in $C$ with $\llbracket p \rrbracket = \llbracket x \rrbracket$. If no appropriate $p$s are found, we use the transition in $D$ instead.
-
-For each statement, along with state $\sigma$, containing th
-
-\begin{itemize}
-  \item Use the denotational semantics of a region to define operational semantics
-    \begin{mathpar}
-    \inferrule
-      { }
-      { \langle R, \sigma, G \rangle \rightarrow \langle \llbracket R \rrbracket_{G}, \sigma, G \rangle }
-    \\\inferrule
-      { }
-      { \langle R \langle x_1, \dots x_n \rangle, \sigma, G \rangle \rightarrow \langle \llbracket R \langle x_1, \dots, x_n \rangle \rrbracket_{G}, \sigma, G \rangle }
-    \end{mathpar}
-
-  \item
-    \begin{mathpar}
-      \inferrule
-    {\langle \langle R_1 X_1, \sigma, G \rangle \rightarrow \langle R_1', \sigma, G \rangle \, \dots \langle \langle R_1 X_1, \sigma, G \rangle \rightarrow \langle R_1', \sigma, G \rangle \, \dots }}
-    {\langle b (x_1, \dots, x_n) = \texttt{call}_f (R_1 X_1, \dots, R_{n'} X_{n'}), \sigma \rangle \rightarrow f (R_1', \dots, R_{n'}' )}
-    \end{mathpar}
-
-
-  \item $X_i$ is the parameter tuple for each region
-    \begin{mathpar}
-      \inferrule
-    { \langle x_1, \sigma, G \rangle \rightarrow \langle x_1', \sigma, G \rangle \, \dots \, \langle x_n, \sigma, G \rangle \rightarrow \langle x_n', \sigma, G \rangle \, \langle \langle R_1 X_1, \sigma, G \rangle \rightarrow \langle R_1', \sigma, G \rangle \, \dots }
-    {\langle b (x_1, \dots, x_n) = \texttt{call}_f (R_1 X_1, \dots, R_{n'} X_{n'}), \sigma \rangle \rightarrow f (R_1', \dots, R_{n'}' )}
+\begin{figure}[H]
+  \centering
+  \begin{mathpar}
+    \inferrule*[left=\textsc{Return}]
+      { \llbracket R (X) \rrbracket_s = v }
+      { \langle \texttt{return } R (X), s\rangle \Downarrow \langle\bttt{Ok} (v), s\rangle } \\
     
-      \inferrule
-    { \langle x_1, \sigma, G \rangle \rightarrow \langle x_1', \sigma, G \rangle \, \dots \, \langle x_n, \sigma, G \rangle \rightarrow \langle x_n', \sigma, G \rangle \, \langle \langle R_1 X_1, \sigma, G \rangle \rightarrow \langle R_1', \sigma, G \rangle \, \dots }
-    {\langle b (x_1, \dots, x_n) = \texttt{goto}_f (R_1 X_1, \dots, R_{n'} X_{n'}), \sigma \rangle \rightarrow b (', \dots, R_{n'}' )}
-    \end{mathpar}
-\end{itemize}
+    \inferrule*[left=\textsc{Goto}]
+      {
+        \llbracket R_1 X_1 \rrbracket_s = v_1 \quad \dots \quad \llbracket R_n X_n \rrbracket_s = v_n \\
+        \langle b, s[\bttt{params}(b) \mapsto \langle v_1, \dots, v_n \rangle]\rangle \Downarrow \langle r, s'\rangle
+      }
+      { \langle \texttt{goto}_b ( R_1 X_1, \dots, R_n X_n ), s\rangle \Downarrow \langle r, s'\rangle }
+  
+    \inferrule*[left=\textsc{Raise}]
+      {
+        \llbracket R_1 X_1 \rrbracket_s = v_1 \quad \dots \quad \llbracket R_n X_n \rrbracket_s = v_n \\
+      }
+      { \langle \texttt{raise } ( R_1 X_1, \dots, R_n X_n), s\rangle \Downarrow \langle \bttt{Err} (v_1, \dots, v_n), s\rangle }
+  
+    \inferrule*[left=\textsc{Call}]
+      {
+        \llbracket R_1 X_1 \rrbracket_s = v_1 \quad \dots \quad \llbracket R_n X_n \rrbracket_s = v_n \\
+        \llbracket f (v_1, \dots, v_n) \rrbracket_s = r
+      }
+      { \langle \texttt{call}_f ( R_1 X_1, \dots, R_n X_n), s\rangle \Downarrow \langle r, s \rangle }
 
+    \inferrule*[lab=\textsc{Match-Case}]
+      {
+        \llbracket R_p X_p \rrbracket_s = v_p \quad \llbracket c_i \rrbracket \sim \llbracket \bttt{c\_label}(v_p) \rrbracket \\
+        \langle \texttt{goto}_{b_i} (R_{i,1} X_{i,1}, \dots ), s \rangle \Downarrow \langle r, s' \rangle
+      }
+      {
+        \langle
+          \texttt{match} (
+            R_p X_p;
+            \dots,
+            c_i \Rightarrow \texttt{goto}_{b_i} (R_{i,1} X_{i,1}, \dots R_{i,n_i} X_{i,n_i}),
+            \dots; \dots
+          ),
+          s
+        \rangle \Downarrow \langle r, s' \rangle
+      }
 
+    \inferrule*[lab=\textsc{Match-Default}]
+      {
+        \llbracket R_p X_p \rrbracket_s = v_p \\
+        \forall_{i \in \{1, \dots, n\}} \llbracket c_i \rrbracket \not \sim \llbracket \bttt{c\_label}(v_p) \rrbracket \\
+        \langle \texttt{goto}_{b_d} (R_{d,1} X_{d,1}, \dots ), s \rangle \Downarrow \langle r, s' \rangle
+      }
+      {
+        \langle
+          \texttt{match} (
+            R_p X_p;
+            c_1 \Rightarrow \dots,
+            \dots,
+            c_n \Rightarrow \dots;
+            \Rightarrow \texttt{goto}_{b_{d}} (R_{d,1} X_{d,1}, \dots )
+          ),
+          s
+        \rangle \Downarrow \langle r, s' \rangle
+      }
+  \end{mathpar}
+  \caption{Semantics for CFG skeleton}
+  \label{fig:base_cfg_semantics}
+\end{figure}
 
-\subsubsection{MLton SSA-like Pattern Matching}
+In ~\ref{fig:base_cfg_semantics}, \textsc{Match-Case} defines the semantics for when we successfully match based on the constructor while \textsc{Match-Default} covers when we do not match on the constructor and execute the default case. Note that we can assume there will be a default case when necessary as we are translating from a well-formed MLton SSA program.
 
-We now consider the following pattern matching:
-
-\begin{alignat*}{2}
-b(x_1, \dots, x_k) &&&::=  \\
-\texttt{match} \, &&& R \left\langle x_{1,1}, \dots, x_{1,k'} \right\rangle \\
-    & && R_{p_1} \left\langle x_{1,p,1}, \dots, x_{1,p,k_{1,p}} \right\rangle \Rightarrow \texttt{goto}_{b_1} \\
-    & && R_{p_2} \left\langle x_{2,p,1}, \dots, x_{2,p,k_{2,p}} \right\rangle \Rightarrow \texttt{goto}_{b_2} \\
-    & &&\vdots \\
-    & && R_{p_n} \left\langle x_{n,p,1}, \dots, x_{n,p,k_{n,p}} \right\rangle \Rightarrow \texttt{goto}_{b_n} \\
-\end{alignat*}
-
-
-This is similar to the first-evaluation pattern matching but is closer to that use in MLton's SSA language.
-
-Here, we can again define an on-demand meaning for our pattern matching transition, this time called $T_2$. Now, however, we execute pattern regions until one does not return $\bot$. What that pattern returns is twhat we give to the block in the goto.
+\subsection{CFG Invariants}
 
 
 \bibliographystyle{plain}
