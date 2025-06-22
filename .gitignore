@@ -33,3 +33,7 @@
 
 # vimtex specific
 .vimtex/
+
+# ltex
+*.ltex/
+*.ltex/*
