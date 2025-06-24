@@ -3,10 +3,17 @@
 \usepackage{amssymb}
 \usepackage{mathpartir}
 \usepackage{tikz}
-\usepackage{ stmaryrd }
+\usepackage{stmaryrd}
 \usepackage{url}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 
 \usetikzlibrary{graphs}
+
+
+\newcommand{\bttt}[1]{\texttt{\textbf{#1}}}
+\newcommand{\tsc}{\textsc}
+
 
 \title{Construction \& Extraction of EqMLton}
 \author{Jordan Quinn}
@@ -26,6 +33,48 @@ Then, we start at the first block and begin constructing its block in the CFG sk
 Then, when we get to the transfer, we forget all of the regions that were not used.
 
 After the initial construction step, it would be useful to contract sequential blocks until we are left with only merge and join points.
+
+\begin{enumerate}
+  \item Create an empty E-Graph, $G$, and an empty CFG Skeleton, $K$
+
+  \item Create an empty map from SSA variables to region in our E-Graph, $m$
+
+  \item For each global in our SSA, represent them in our E-Graph and add the variable label and root E-class to $m$ as parameterless regions
+
+  \item (Only looking at one function, $f$, for now) Create a $\hat{param}$ node for each function parameter to $f$. Add these to $m$ as regions that take one parameter
+
+  \item Let $B$ be a DFS traversal of all blocks in $f$ starting from its starting block
+
+  \item For each $b$ in $B$:
+
+    \begin{enumerate}
+      \item Create a new block in the CFG skeleton with the same label and block arguments as $b$
+
+      \item Create a new empty map from SSA variable label to E-Graph region
+
+    \end{enumerate}
+\end{enumerate}
+
+
+\begin{algorithm}
+  \begin{algorithmic}[1]
+    \STATE $G: \tsc{EGraph} \gets \tsc{EGraph}()$
+    \STATE $K: \tsc{Skeleton} \gets \tsc{Skeleton}()$
+    \STATE $m: \tsc{Map} [\tsc{SSAVariable}, \,\tsc{Region}] \gets \tsc{InitMap}()$
+    \FOR{$g \in \tsc{SSAGlobals}$}
+      \STATE $r \gets \tsc{Region}(g, \langle \rangle)$
+      \STATE $m \gets m[g_{label} \mapsto r]$
+    \ENDFOR
+    \FOR{$p \in \tsc{FuncParams}$}
+      \STATE $r \gets \tsc{Region}(p, \langle \tsc{AnonVar}())$
+      \STATE $m \gets m[p_{label} \mapsto r]$
+    \ENDFOR
+    \FOR{$b$ \textbf{in} \tsc{DFSTraversal}(\tsc{SSA})}
+      \STATE 
+    \ENDFOR
+  \end{algorithmic}
+\end{algorithm}
+
 
 \section{Extraction}
 
