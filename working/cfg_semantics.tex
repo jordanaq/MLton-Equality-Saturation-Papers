@@ -271,9 +271,13 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
   \label{fig:base_cfg_semantics}
 \end{figure}
 
-In ~\ref{fig:base_cfg_semantics}, \textsc{Match-Case} defines the semantics for when we successfully match based on the constructor while \textsc{Match-Default} covers when we do not match on the constructor and execute the default case. Note that we can assume there will be a default case when necessary as we are translating from a well-formed MLton SSA program.
+In ~\ref{fig:base_cfg_semantics}, there are a few additional considerations. First, $\llbracket R \, X \rrbracket_s$ is the same as $\llbracket R \, V \rrbracket$ where $V = \langle s(x_1), \dots, s(x_n) \rangle$. Then, \textsc{Match-Case} defines the semantics for when we successfully match based on the constructor while \textsc{Match-Default} covers when we do not match on the constructor and execute the default case. Note that we can assume there will be a default case when necessary as we are translating from a well-formed MLton SSA program.
 
-\subsection{CFG Invariants}
+An important consideration is function arguments and globals. These are available to every block in the CFG regardless of where they appear. As such, we start with each function argument and global in our initial store, $s$.
+
+\subsection{CFG Properties}
+
+In our CFG skeleton, if we consider each \texttt{goto} assignment, as it saves this to the store, we can consider our CFG skeleton to have the dominance property, where each use of a variable is dominated by its definition.
 
 
 \bibliographystyle{plain}
