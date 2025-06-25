@@ -154,8 +154,8 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
         &|&& \texttt{match} ( R_p X_p; \\
         &&&\quad c_1 \Rightarrow \texttt{goto}_{b_1} (R_{1,1} X_{1,1}, \dots, R_{1,n_1} X_{1,n_1},\\
         &&&\quad \dots, \\
-        &&&\quad c_n \Rightarrow \texttt{goto}_{b_n} (R_{n,1} X_{n,1}, \dots, R_{n,n_n} X_{n,n_n}; \\
-        &&&\quad [\Rightarrow \texttt{goto}_{b_{d}} (R_{d,1} X_{d,1}, \dots, R_{d,n_d} X_{d,n_d})] ) \\
+        &&&\quad c_n \Rightarrow \texttt{goto}_{b_n} (R_{n,1} X_{n,1}, \dots, R_{n,n_n} X_{n,n_n} \\
+        &&&\quad [;\Rightarrow \texttt{goto}_{b_{d}} (R_{d,1} X_{d,1}, \dots, R_{d,n_d} X_{d,n_d})] ) \\
     R ::&=&& region\_label \\
     X ::&=&& \langle x_1, \dots, x_n \rangle \\
     x ::&=&& argument\_label \\
