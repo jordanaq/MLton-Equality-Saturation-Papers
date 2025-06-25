@@ -59,19 +59,38 @@ After the initial construction step, it would be useful to contract sequential b
 \begin{algorithm}
   \begin{algorithmic}[1]
     \STATE $G: \tsc{EGraph} \gets \tsc{EGraph}()$
-    \STATE $K: \tsc{Skeleton} \gets \tsc{Skeleton}()$
+    \STATE $B: \tsc{Set}[\tsc{SkBlock}]$
     \STATE $m: \tsc{Map} [\tsc{SSAVariable}, \,\tsc{Region}] \gets \tsc{InitMap}()$
-    \FOR{$g \in \tsc{SSAGlobals}$}
+    \FOR{$g = \langle l : \tau \rangle$ \textbf{in} $\tsc{SSAGlobals}$}
       \STATE $r \gets \tsc{Region}(g, \langle \rangle)$
-      \STATE $m \gets m[g_{label} \mapsto r]$
+      \STATE $m \gets m[l \mapsto r]$
+      \STATE $G \gets G \cup r$
     \ENDFOR
-    \FOR{$p \in \tsc{FuncParams}$}
-      \STATE $r \gets \tsc{Region}(p, \langle \tsc{AnonVar}())$
-      \STATE $m \gets m[p_{label} \mapsto r]$
+    \FOR{$p = \langle l : \tau \rangle$ \textbf{in} $\tsc{FuncParams}$}
+      \STATE $r \gets \tsc{Region}(\overline{param(p)}, \langle p \rangle)$
+      \STATE $m \gets m[l \mapsto r]$
+      \STATE $G \gets G \cup r$
     \ENDFOR
     \FOR{$b$ \textbf{in} \tsc{DFSTraversal}(\tsc{SSA})}
-      \STATE 
+      \FOR{$x = \langle l : \tau \rangle$ \textbf{in} $b_{args}$}
+        \STATE $r \gets \tsc{Region}(\overline{param(x)}, \langle x \rangle)$
+        \STATE $m \gets m[l \mapsto r]$
+        \STATE $G \gets G \cup r$
+      \ENDFOR
+      \FOR{$s$ \textbf{in} $b_{assignments}$}
+        \FOR{$x=\langle l : \tau \rangle$ \textbf{in} $\{\langle l : \tau \rangle \in m_{keys} \text{ such that } l \in s\}$}
+          \STATE $r \gets \tsc{Region}(\overline{param(x)}, \langle x \rangle)$
+          \STATE $m \gets m[l \mapsto r]$
+          \STATE $G \gets G \cup r$
+        \ENDFOR
+      \ENDFOR
+      \STATE Let $t$ be $b_t$ where each variable, $x$, is replaced by $r \, r_I$ where $r=\tsc{Query}(m, x)$
+      \STATE $(X, T) \gets$ unzip $b_{args}$
+      \STATE $B \gets B \cup \tsc{SkBlock}(b_{label}, X, T, t)$
     \ENDFOR
+    \STATE $K_{root} \gets \tsc{FuncEntryBlock}_{label}$
+    \STATE $K \gets \tsc{Skeleton}(K_{root}, B, G, m)$
+    \STATE \textbf{yield} $K$
   \end{algorithmic}
 \end{algorithm}
 
