@@ -5,6 +5,7 @@
 \usepackage{tikz}
 \usepackage{stmaryrd}
 \usepackage{float}
+\usepackage{wasysym}
 
 \usetikzlibrary{graphs}
 
@@ -148,12 +149,12 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
     b ::&=&& block\_label \\
     T ::&=&& \langle \tau_1, \dots, \tau_n \rangle \\
     t ::&=&& \texttt{goto}_b ( R_1 X_1, \dots, R_n X_n ) \\
-        &|&& \texttt{call}_f ( R_1 X_1, \dots, R_n X_n ) \\
+        &|&& \texttt{call}_f ( R_1 X_1, \dots, R_n X_n) \Rightarrow \, b_{ok}; \, b_{err} \\
         &|&& \texttt{raise} ( R_1 X_1, \dots, R_n X_n ) \\
         &|&& \texttt{return} ( R_1 X_1, \dots, R_n X_n ) \\
         &|&& \texttt{match} ( R_p X_p; \\
         &&&\quad c_1 \Rightarrow \texttt{goto}_{b_1} (R_{1,1} X_{1,1}, \dots, R_{1,n_1} X_{1,n_1},\\
-        &&&\quad \dots, \\
+        &&&\quad \vdots \\
         &&&\quad c_n \Rightarrow \texttt{goto}_{b_n} (R_{n,1} X_{n,1}, \dots, R_{n,n_n} X_{n,n_n} \\
         &&&\quad [;\Rightarrow \texttt{goto}_{b_{d}} (R_{d,1} X_{d,1}, \dots, R_{d,n_d} X_{d,n_d})] ) \\
     R ::&=&& region\_label \\
@@ -208,33 +209,44 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
   \centering
   \begin{mathpar}
     \inferrule*[left=\textsc{Return}]
-      { \llbracket R (X) \rrbracket_s = v }
-      { \langle \texttt{return } R (X), s\rangle \Downarrow \langle\bttt{Ok} (v), s\rangle } \\
+      { \llbracket R \, X \rrbracket_s = v }
+      { \langle \texttt{return} (R \, X), s\rangle \Downarrow \bttt{Ok}(v) } \\
     
     \inferrule*[left=\textsc{Goto}]
       {
         \llbracket R_1 X_1 \rrbracket_s = v_1 \quad \dots \quad \llbracket R_n X_n \rrbracket_s = v_n \\
-        \langle b, s[\bttt{params}(b) \mapsto \langle v_1, \dots, v_n \rangle]\rangle \Downarrow \langle r, s'\rangle
+        \langle \bttt{block}(b)_t, s[\bttt{params}(b) \mapsto \langle v_1, \dots, v_n \rangle]\rangle \Downarrow r
       }
-      { \langle \texttt{goto}_b ( R_1 X_1, \dots, R_n X_n ), s\rangle \Downarrow \langle r, s'\rangle }
+      { \langle \texttt{goto}_b ( R_1 X_1, \dots, R_n X_n ), s\rangle \Downarrow r }
   
     \inferrule*[left=\textsc{Raise}]
       {
         \llbracket R_1 X_1 \rrbracket_s = v_1 \quad \dots \quad \llbracket R_n X_n \rrbracket_s = v_n \\
       }
-      { \langle \texttt{raise } ( R_1 X_1, \dots, R_n X_n), s\rangle \Downarrow \langle \bttt{Err} (v_1, \dots, v_n), s\rangle }
+      { \langle \texttt{raise } ( R_1 X_1, \dots, R_n X_n), s\rangle \Downarrow \bttt{Err} (v_1, \dots, v_n) }
   
-    \inferrule*[left=\textsc{Call}]
+    \inferrule*[left=\textsc{Call-Ok}]
       {
-        \llbracket R_1 X_1 \rrbracket_s = v_1 \quad \dots \quad \llbracket R_n X_n \rrbracket_s = v_n \\
-        \llbracket f (v_1, \dots, v_n) \rrbracket_s = r
+        \llbracket R_i X_i \rrbracket_s = v_i \quad 
+        \llbracket f (\dots, v_i, \dots) \rrbracket_s = \bttt{Ok}(v) \\
+        \langle b, \langle x : \tau \rangle, t \rangle = \bttt{block}(b_{ok}) \quad
+        \langle t, s[x \mapsto v ]\rangle \Downarrow r
       }
-      { \langle \texttt{call}_f ( R_1 X_1, \dots, R_n X_n), s\rangle \Downarrow \langle r, s \rangle }
+      { \langle \texttt{call}_f ( \dots, R_i X_i, \dots ) \Rightarrow b_{ok} ; b_{err}, s\rangle \Downarrow r }
+
+    \inferrule*[left=\textsc{Call-Err}]
+      {
+        \llbracket R_i X_i \rrbracket_s = v_i \quad 
+        \llbracket f (\dots, v_i, \dots) \rrbracket_s = \bttt{Err}(v) \\
+        \langle b, \langle x : \tau \rangle, t \rangle = \bttt{block}(b_{err}) \quad
+        \langle t, s[x \mapsto v ]\rangle \Downarrow r
+      }
+      { \langle \texttt{call}_f ( \dots, R_i X_i, \dots ) \Rightarrow b_{ok} ; b_{err}, s\rangle \Downarrow r }
 
     \inferrule*[lab=\textsc{Match-Case}]
       {
         \llbracket R_p X_p \rrbracket_s = v_p \quad \llbracket c_i \rrbracket \sim \llbracket \bttt{c\_label}(v_p) \rrbracket \\
-        \langle \texttt{goto}_{b_i} (R_{i,1} X_{i,1}, \dots ), s \rangle \Downarrow \langle r, s' \rangle
+        \langle \texttt{goto}_{b_i} (R_{i,1} X_{i,1}, \dots ), s \rangle \Downarrow r 
       }
       {
         \langle
@@ -245,14 +257,14 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
             \dots; \dots
           ),
           s
-        \rangle \Downarrow \langle r, s' \rangle
+        \rangle \Downarrow r
       }
 
     \inferrule*[lab=\textsc{Match-Default}]
       {
         \llbracket R_p X_p \rrbracket_s = v_p \\
         \forall_{i \in \{1, \dots, n\}} \llbracket c_i \rrbracket \not \sim \llbracket \bttt{c\_label}(v_p) \rrbracket \\
-        \langle \texttt{goto}_{b_d} (R_{d,1} X_{d,1}, \dots ), s \rangle \Downarrow \langle r, s' \rangle
+        \langle \texttt{goto}_{b_d} (R_{d,1} X_{d,1}, \dots ), s \rangle \Downarrow r
       }
       {
         \langle
@@ -264,7 +276,7 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
             \Rightarrow \texttt{goto}_{b_{d}} (R_{d,1} X_{d,1}, \dots )
           ),
           s
-        \rangle \Downarrow \langle r, s' \rangle
+        \rangle \Downarrow r
       }
   \end{mathpar}
   \caption{Semantics for CFG skeleton}
