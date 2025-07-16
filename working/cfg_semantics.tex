@@ -137,6 +137,8 @@ An E-graph, however, does not have a specific semantic meaning.
 
 We define the semantics of a region, $R = \langle N, I, r \rangle$, with a list of arguments to $R$, $X = \langle x_1, \dots, x_n \rangle$ similarly to the semantics of E-graphs given by Tate, et al.~\cite{eqsat-lmcs}. Notably, we place the arguments passed to the region, which share a type with the list of parameters, $\Gamma (X) \sim  \Gamma (I)$, into the e-graph as constant nodes that replace the parameter nodes. This is done via $r' = r[i_1 \mapsto \llbracket x_1 \rrbracket, \dots, i_n \mapsto \llbracket x_n \rrbracket]$. Then, we say that the semantics of $R (X) = R \langle x_1, \dots, x_n \rangle$ is $\left \llbracket R (X) \right \rrbracket = \llbracket r' \rrbracket$. Note that $R (X) \equiv R\, X \equiv R \langle x_1, \dots, x_n \rangle$ for convenience.
 
+We define the semantics of a region, $R = \langle N, r \rangle$
+
 
 \subsection{CFG Skeleton}
 
