@@ -59,69 +59,76 @@ After the initial construction step, it would be useful to contract sequential b
 
 
 \begin{algorithm}
-  \begin{algorithmic}[1]
-    \State $G: \tsc{FPeg} \gets \tsc{InitFPeg}()$
-    \State $todo: \tsc{Set}[\tsc{SsaBlock}] = \{ \tsc{FuncEntryBlock} \}$
-    \State $B: \tsc{Map}[\tsc{BlockLabel}, \tsc{SkBlock}]$
-    \State $m: \tsc{Map} [\tsc{SsaVariable}, \,\tsc{Region}] \gets \tsc{InitMap}()$
-    \For{$\langle l : \tau = e \rangle$ \textbf{in} $\tsc{SsaGlobals}$}
+\begin{algorithmic}[1]
+  \State $G: \tsc{FPeg} \gets \tsc{InitFPeg}()$
+  \State $todo: \tsc{Set}[\tsc{SsaBlock}] = \{ \tsc{FuncEntryBlock} \}$
+  \State $B: \tsc{Map}[\tsc{BlockLabel}, \tsc{SkBlock}]$
+  \State $m: \tsc{Map} [\tsc{SsaVariable}, \,\tsc{Region}] \gets \tsc{InitMap}()$
+  \For{$\langle l : \tau = e \rangle$ \textbf{in} $\tsc{SsaGlobals}$}
+    \State $G, r \gets \tsc{MakeRegion}(G, e)$
+    \State $m \gets m[l \mapsto r]$
+  \EndFor
+  \For{$p = \langle l : \tau \rangle$ \textbf{in} $\tsc{FuncParams}$}
+    \State $G, r \gets \tsc{MakeParam}(G, p)$
+    \State $m \gets m[l \mapsto r]$
+  \EndFor
+  \For{$b$ \textbf{in} $todo$}
+    \For{$x = \langle l : \tau \rangle$ \textbf{in} $b_{args}$}
+      \State $G, r \gets \tsc{MakeParam}(G, x)$
+      \State $m \gets m[l \mapsto r]$
+    \EndFor
+    \For{$\langle l : \tau = e \rangle$ \textbf{in} $b_{assignments}$}
       \State $G, r \gets \tsc{MakeRegion}(G, e)$
       \State $m \gets m[l \mapsto r]$
     \EndFor
-    \For{$p = \langle l : \tau \rangle$ \textbf{in} $\tsc{FuncParams}$}
-      \State $G, r \gets \tsc{MakeParam}(G, p)$
-      \State $m \gets m[l \mapsto r]$
+    \For{$l$ \textbf{in} $\tsc{Labels}(b_t) - B_{keys}$}
+      \State $todo \gets todo \cup \{ \tsc{GetSsaBlock}(l) \}$
     \EndFor
-    \For{$b$ \textbf{in} $todo$}
-      \For{$x = \langle l : \tau \rangle$ \textbf{in} $b_{args}$}
-        \State $G, r \gets \tsc{MakeParam}(G, x)$
-        \State $m \gets m[l \mapsto r]$
-      \EndFor
-      \For{$\langle l : \tau = e \rangle$ \textbf{in} $b_{assignments}$}
-        \State $G, r \gets \tsc{MakeRegion}(G, e)$
-        \State $m \gets m[l \mapsto r]$
-      \EndFor
-      \For{$l$ \textbf{in} $\tsc{Labels}(b_t) - B_{keys}$}
-        \State $todo \gets todo \cup \{ \tsc{GetSsaBlock}(l) \}$
-      \EndFor
-      \State $t \gets \tsc{MakeTransition}(m, b_t)$
-      \State $\langle X : T \rangle \gets b_{args}$
-      \State $B \gets B[b_{label} \mapsto \tsc{SkBlock}(b_{label}, X, T, t)]$
-    \EndFor
-    \State $K_{root} \gets \tsc{FuncEntryBlock}_{label}$
-    \State $K \gets \tsc{Skeleton}(K_{root}, B, G, m)$
-    \State \textbf{yield} $K$
-  \end{algorithmic}
+    \State $t \gets \tsc{MakeTransition}(m, b_t)$
+    \State $\langle X : T \rangle \gets b_{args}$
+    \State $B \gets B[b_{label} \mapsto \tsc{SkBlock}(b_{label}, X, T, t)]$
+  \EndFor
+  \State $K_{root} \gets \tsc{FuncEntryBlock}_{label}$
+  \State $K \gets \tsc{Skeleton}(K_{root}, B, G)$
+  \State \textbf{yield} $K$
+\end{algorithmic}
 \end{algorithm}
 
 
 \section{Extraction}
 
 \begin{algorithm}
-  \begin{algorithmic}[1]
-    \State Let $K = \langle K_{root}, B, G, m \rangle$ be our \tsc{Skeleton}
-    \State $todo : \tsc{Set}[\tsc{SkBlock}] = \{ K_{root} \}$
-    \State $seen : \tsc{Set}[\tsc{SkBlock}] = \emptyset$
-    \State $B' : \tsc{Set}[\tsc{SsaBlock}] = \emptyset$
-    \State $m' : \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}] = \tsc{InitMap}()$
-    \For{$b$ \textbf{in} $todo$}
-      \State $assigns : \tsc{List}[\tsc{SsaAssignment}] \gets \{\}$
-      \State Let $R$ be the set of regions referenced in $b_t$
-      \State Let $E$ be the closure of $\tsc{Children}$ over all e-classes in $R$
-      \State Let $R'$ be a list of regions, from $E$, sorted ascending by region height
-      \For{$r$ \textbf{in} $R'$}
-        \State $e \gets \tsc{FpegToExpr}(G, m', r)$
-        \State $x \gets \tsc{FindKeyByValueOrDefault}(m, r, \tsc{FreshVar})$
-        \State $assigns \gets \tsc{Append}(assigns, \tsc{SsaAssign}(x, \tsc{Type}(r), e))$
-        \State $m' \gets m'[r \mapsto x]$
-      \EndFor
-      \State Let $B'$ be all the blocks referenced in $b_t$
-      \State $seen \gets seen \cup b$
-      \State $todo \gets todo \cup B' - seen$
-      \State $t' \gets \tsc{MakeSsaTransfer}(m', b_t)$
-      \State $b' \gets \tsc{SsaBlock}(b_l, b_X, b_T, assigns, t')$
+\begin{algorithmic}[1]
+  \State Let $K = \langle K_{root}, B, G\rangle$ be our \tsc{Skeleton}
+  \State $todo : \tsc{Set}[\tsc{SkBlock}] = \{ K_{root} \}$
+  \State $ssa : \tsc{SsaCfg} = \tsc{InitSsaCfg}()$
+  \State $m : \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}] = \tsc{InitMap}()$
+  \For{$bl$ \textbf{in} $todo$}
+    \State $assigns : \tsc{List}[\tsc{SsaAssign}] \gets [\,]$
+    \State Let $R$ be the set of regions referenced in $bl_t$
+    \State Let $C$ be the closure of $\tsc{Children}$ over all e-classes in $R$
+    \State Let $C'$ be a list of regions, from $E$, sorted ascending by region height
+    \State $L \gets \tsc{LiveVars}(ssa, bl_b)$
+    \For{$r$ \textbf{in} $C'$}
+      \State $e \gets \tsc{FpegToExpr}(G, m, r)$
+      \State $x \gets \tsc{FindKeyByValueOrDefault}(m, r, \bot)$
+      \If{$x \not \in L$}
+        \State $x \gets \tsc{FreshVar}()$
+      \EndIf
+      \State $assigns \gets \tsc{Append}(assigns, \tsc{SsaAssign}(x, \tsc{Type}(r), e))$
+      \State $m \gets m[r \mapsto x]$
     \EndFor
-  \end{algorithmic}
+    \State $t' \gets \tsc{MakeSsaTransfer}(m, bl_t)$
+    \State $bl' \gets \tsc{SsaBlock}(bl_b, bl_X, bl_T, assigns, t')$
+    \State $ssa \gets \tsc{UpdateSsaBlock}(ssa, bl')$
+    \State Let $next$ be all the blocks referenced in $bl_t$
+    \For{$bl \in next - todo - ssa_B$}
+      \State $bl' \gets \tsc{SsaBlock}(bl_b, bl_X, bl_T, \emptyset, \tsc{Bug})$
+      \State $ssa \gets \tsc{InsertSsaBlock}(ssa, bl')$
+    \EndFor
+    \State $todo \gets todo \cup next - ssa_B$
+  \EndFor
+\end{algorithmic}
 \end{algorithm}
 
 \begin{algorithm}
