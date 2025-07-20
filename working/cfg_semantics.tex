@@ -155,9 +155,9 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
         &|&& \texttt{raise} ( R_1, \dots, R_n ) \\
         &|&& \texttt{return} ( R_1, \dots, R_n ) \\
         &|&& \texttt{match} ( R_p; \\
-        &&&\quad c_1 \Rightarrow \texttt{goto}_{b_1} (R_{1,1}, \dots, R_{1,n_1},\\
+        &&&\quad c_1 \Rightarrow b_1, \\
         &&&\quad \vdots \\
-        &&&\quad c_n \Rightarrow \texttt{goto}_{b_n} (R_{n,1}, \dots, R_{n,n_n} \\
+        &&&\quad c_n \Rightarrow b_n \\
         &&&\quad [;\Rightarrow \texttt{goto}_{b_{d}} (R_{d,1}, \dots, R_{d,n_d})] ) \\
     R ::&=&& region\_label \\
     X ::&=&& \langle x_1, \dots, x_n \rangle \\
@@ -247,15 +247,17 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
 
     \inferrule*[lab=\textsc{Match-Case}]
       {
-        \llbracket R_p  \rrbracket_s = v_p \quad \llbracket c_i \rrbracket \sim \llbracket \bttt{c\_label}(v_p) \rrbracket \\
-        \langle \texttt{goto}_{b_i} (R_{i,1}, \dots ), s \rangle \Downarrow r 
+        \llbracket R_p  \rrbracket_s = v \\
+        \llbracket c_i \rrbracket \sim \llbracket \bttt{c\_label}(v) \rrbracket \\
+        \langle b, \langle x_1, x_2, \dots, x_n \rangle, T, t \rangle = \bttt{block}(b) \\
+        \langle b_i, s[x_1 \mapsto v_2, x_2 \mapsto v_3, \dots, v_{n+1}]\rangle \Downarrow r \\
       }
       {
         \langle
           \texttt{match} (
             R_p ;
             \dots,
-            c_i \Rightarrow \texttt{goto}_{b_i} (R_{i,1}, \dots, R_{i,n_i}),
+            c_i \Rightarrow b_i,
             \dots; \dots
           ),
           s
@@ -266,7 +268,8 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
       {
         \llbracket R_p  \rrbracket_s = v_p \\
         \forall_{i \in \{1, \dots, n\}} \llbracket c_i \rrbracket \not \sim \llbracket \bttt{c\_label}(v_p) \rrbracket \\
-        \langle \texttt{goto}_{b_d} (R_{d,1}, \dots ), s \rangle \Downarrow r
+        \langle b_d, \langle \rangle, \langle \rangle, t \rangle = \bttt{block}(b_d) \\
+        \langle t, s \rangle \Downarrow r
       }
       {
         \langle
@@ -275,7 +278,7 @@ Our CFG can be defined using the grammar in figure \ref{fig:CFG_grammar}. Howeve
             c_1 \Rightarrow \dots,
             \dots,
             c_n \Rightarrow \dots;
-            \Rightarrow \texttt{goto}_{b_{d}} (R_{d,1}, \dots )
+            \Rightarrow b_d
           ),
           s
         \rangle \Downarrow r
