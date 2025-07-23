@@ -132,17 +132,17 @@ After the initial construction step, it would be useful to contract sequential b
 \end{algorithm}
 
 \begin{algorithm}
-  \begin{algorithmic}[1]
-    \Function{$\tsc{FpegToExpr}$}{$G: \tsc{Feg}, m: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}], r: \tsc{Region}$} : \tsc{Expression}
-      \If{$r$ \textbf{in} $m_{keys}$}
-        \Return $m.\tsc{Get}(r)$
-      \Else
-        \State $n \gets \tsc{ENodeSelect}(G, r)$
-        \State $es \gets \tsc{map}(\tsc{FpegToExpr}(G, m),\, n.\tsc{Children})$
-        \State \Return $\llbracket(n_L(\tsc{UnpackTuple}(es))\rrbracket$
-      \EndIf
-    \EndFunction
-  \end{algorithmic}
+\begin{algorithmic}[1]
+  \Function{$\tsc{FpegToExpr}$}{$G: \tsc{Feg}, m: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}], r: \tsc{Region}$} : \tsc{Expression}
+    \If{$r$ \textbf{in} $m_{keys}$}
+      \Return $m.\tsc{Get}(r)$
+    \Else
+      \State $n \gets \tsc{ENodeSelect}(G, r)$
+      \State $es \gets \tsc{map}(\tsc{FpegToExpr}(G, m),\, n.\tsc{Children})$
+      \State \Return $\llbracket(n_L(\tsc{UnpackTuple}(es))\rrbracket$
+    \EndIf
+  \EndFunction
+\end{algorithmic}
 \end{algorithm}
 
 
