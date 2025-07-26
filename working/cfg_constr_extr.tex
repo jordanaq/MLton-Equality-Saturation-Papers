@@ -97,43 +97,9 @@ After the initial construction step, it would be useful to contract sequential b
 
 \section{Extraction}
 
-\begin{algorithm}
+\begin{algorithm}[H]
 \begin{algorithmic}[1]
-  \State Let $K = \langle K_{root}, B, G\rangle$ be our \tsc{Skeleton}
-  \State $todo : \tsc{Set}[\tsc{SkBlock}] = \{ K_{root} \}$
-  \State $ssa : \tsc{SsaCfg} = \tsc{InitSsaCfg}()$
-  \State $m : \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}] = \tsc{InitMap}()$
-  \For{$bl$ \textbf{in} $todo$}
-    \State $assigns : \tsc{List}[\tsc{SsaAssign}] \gets [\,]$
-    \State Let $R$ be the set of regions referenced in $bl_t$
-    \State Let $C$ be the closure of $\tsc{Children}$ over all e-classes in $R$
-    \State Let $C'$ be a list of regions, from $E$, sorted ascending by region height
-    \State $L \gets \tsc{LiveVars}(ssa, bl_b)$
-    \For{$r$ \textbf{in} $C'$}
-      \State $e \gets \tsc{FpegToExpr}(G, m, r)$
-      \State $x \gets \tsc{FindKeyByValueOrDefault}(m, r, \bot)$
-      \If{$x \not \in L$}
-        \State $x \gets \tsc{FreshVar}()$
-      \EndIf
-      \State $assigns \gets \tsc{Append}(assigns, \tsc{SsaAssign}(x, \tsc{Type}(r), e))$
-      \State $m \gets m[r \mapsto x]$
-    \EndFor
-    \State $t' \gets \tsc{MakeSsaTransfer}(m, bl_t)$
-    \State $bl' \gets \tsc{SsaBlock}(bl_b, bl_X, bl_T, assigns, t')$
-    \State $ssa \gets \tsc{UpdateSsaBlock}(ssa, bl')$
-    \State Let $next$ be all the blocks referenced in $bl_t$
-    \For{$bl \in next - todo - ssa_B$}
-      \State $bl' \gets \tsc{SsaBlock}(bl_b, bl_X, bl_T, \emptyset, \tsc{Bug})$
-      \State $ssa \gets \tsc{InsertSsaBlock}(ssa, bl')$
-    \EndFor
-    \State $todo \gets todo \cup next - ssa_B$
-  \EndFor
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-\begin{algorithmic}[1]
-  \Function{$\tsc{FpegToExpr}$}{$G: \tsc{Feg}, m: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}], r: \tsc{Region}$} : \tsc{Expression}
+  \Function{$\tsc{FpegToExpr}$}{$G$: \tsc{Feg}, $m$: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}], $r$: \tsc{Region}} : \tsc{Expression}
     \If{$r$ \textbf{in} $m_{keys}$}
       \Return $m.\tsc{Get}(r)$
     \Else
@@ -141,6 +107,97 @@ After the initial construction step, it would be useful to contract sequential b
       \State $es \gets \tsc{map}(\tsc{FpegToExpr}(G, m),\, n.\tsc{Children})$
       \State \Return $\llbracket(n_L(\tsc{UnpackTuple}(es))\rrbracket$
     \EndIf
+  \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \Function{$\tsc{SkTransToSsa}$}{$m$: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}], $t$: \tsc{SkTrans}} : \tsc{SsaTrans}
+    \If{$\langle\tsc{SkTrans::Goto}_b (R_1, \dots, R_n)\rangle = t$}
+      \State $R \gets \{R_1, \dots, R_n\}$
+      \If{$R \cap \tsc{MapKeys}(m) \not = R$}
+        \State \textbf{throw} \verb|"To SSA called before regions were translated"|
+      \EndIf
+      \State Let $x_i = \tsc{MapGet}(m, R_i)$
+      \State \Return $\tsc{SsaTrans::Goto}_b (x_1, \dots, x_n)$
+    \ElsIf{$\langle\tsc{SkTrans::Call}_f(R_1, \dots, R_n) \Rightarrow b_{ok}, b_{err}\rangle = t $}
+      \State $R \gets \{R_1, \dots, R_n\}$
+      \If{$R \cap \tsc{MapKeys}(m) \not = R$}
+        \State \textbf{throw} \verb|"To SSA called before regions were translated"|
+      \EndIf
+      \State Let $x_i = \tsc{MapGet}(m, R_i)$
+      \State \Return $\tsc{SsaTrans::Call}_f (x_1, \dots, x_n; b_{ok}, b_{err})$
+    \ElsIf{$\langle\tsc{SkTrans::Raise} (R_1, \dots, R_n) \rangle = t$}
+      \State $R \gets \{R_1, \dots, R_n\}$
+      \If{$R \cap \tsc{MapKeys}(m) \not = R$}
+        \State \textbf{throw} \verb|"To SSA called before regions were translated"|
+      \EndIf
+      \State Let $x_i = \tsc{MapGet}(m, R_i)$
+      \State \Return $\tsc{SsaTrans::Raise} (x_1, \dots, x_n; b_{ok}, b_{err})$
+    \ElsIf{$\langle\tsc{SkTrans::Return} (R_1, \dots, R_n) \rangle = t$}
+      \State $R \gets \{R_1, \dots, R_n\}$
+      \If{$R \cap \tsc{MapKeys}(m) \not = R$}
+        \State \textbf{throw} \verb|"To SSA called before regions were translated"|
+      \EndIf
+      \State Let $x_i = \tsc{MapGet}(m, R_i)$
+      \State \Return $\tsc{SsaTrans::Return} (x_1, \dots, x_n; b_{ok}, b_{err})$
+    \ElsIf{$\langle\tsc{SkTrans::Match} (R_p; c_1 \Rightarrow b_1, \dots, c_n \Rightarrow b_n) \rangle = t$}
+      \If{$R_p \not \in \tsc{MapKeys}(m)$}
+        \State \textbf{throw} \verb|"To SSA called before regions were translated"|
+      \EndIf
+      \State Let $x_i = \tsc{MapGet}(m, R_i)$
+      \State \Return $\tsc{SsaTrans::Match} (x_p; c_1 => b_1, \dots, c_n \Rightarrow b_n)$
+    \ElsIf{$\langle\tsc{SkTrans::Match} (R_p; c_1 \Rightarrow b_1, \dots, c_n \Rightarrow b_n; \Rightarrow b_d) \rangle = t$}
+      \If{$R_p \not \in \tsc{MapKeys}(m)$}
+        \State \textbf{throw} \verb|"To SSA called before regions were translated"|
+      \EndIf
+      \State Let $x_i = \tsc{MapGet}(m, R_i)$
+      \State \Return $\tsc{SsaTrans::Match} (x_p; c_1 => b_1, \dots, c_n \Rightarrow b_n; b_d)$
+    \EndIf
+  \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \Function{$\tsc{SkBlockToSsa}$}{$Sk$: \tsc{Skeleton}, $m$: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}], $block$: \tsc{SkBlock}} : \tsc{Set}[\tsc{SsaBlock}]
+    \For{$x_i$ \textbf{in} $block_X$}
+      \State $r_i \gets \tsc{GetParamRegionByVar}(Sk_G, x)$
+      \State $m \gets \tsc{MapInsert}(m, r_i, x_i)$
+    \EndFor
+    \State $assigns : \tsc{List}[\tsc{SsaAssign}] \gets [\,]$
+    \State Let $R$ be the set of regions referenced in $bl_t$
+    \State Let $C$ be the closure of $\tsc{Children}$ over all e-classes in $R$
+    \State Let $C'$ be $C$ sorted ascending by region height
+    \For{$r$ \textbf{in} $C' - \tsc{MapKeys}(m)$}
+      \State $x \gets \tsc{FreshVar}()$
+      \State $e \gets \tsc{FpegToExpr}(Sk_G, m, r)$
+      \State $m \gets \tsc{MapInsert}(m, r, x)$
+      \State $assigns \gets \tsc{ListAppend}(assigns, \tsc{SsaAssign}(x, \tsc{Type}(r), e))$
+    \EndFor
+    \State $B \gets \emptyset$
+    \For{$block'$ \textbf{in} $\tsc{DominatorTreeImmediateChildren}(Sk, block)$}
+      \State $B \gets B \cup \tsc{SkBlockToSsa}(Sk, m, block')$
+    \EndFor 
+    \State $t \gets \tsc{SkTransToSsa}(m, block_t)$
+    \State $block' \gets \tsc{SsaBlock}(block_b, block_X, block_T, assigns, t)$
+    \State \Return{$B \cup \{ block' \}$}
+  \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+For the following, note that $m$ would only contain the globals at this point in computation.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \Function{$\tsc{SkFuncToSsa}$}{$Sk$: \tsc{Skeleton}, $f$: \tsc{SkFunc}, $m$: \tsc{Map}[\tsc{Region}, \tsc{SsaVariable}]} : \tsc{SsaFunc}
+    \For{$x_i$ \textbf{in} $f_X$}
+      \State $r_i \gets \tsc{GetParamRegionByVar}(Sk_G, x)$
+      \State $m \gets \tsc{MapInsert}(m, r_i, x_i)$
+    \EndFor
+    \State $B \gets \tsc{SkBlockToSsa}(Sk, m, f_{entry})$
+    \State \Return $\tsc{SsaFunc}(f_{label}, f_X, f_T, f_{ret}, B)$
   \EndFunction
 \end{algorithmic}
 \end{algorithm}
